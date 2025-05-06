@@ -1,0 +1,176 @@
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
+import './AuthPages.css';
+
+const SignupPage = () => {
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    agreeTerms: false
+  });
+
+  const [errors, setErrors] = useState({});
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData({
+      ...formData,
+      [name]: type === 'checkbox' ? checked : value
+    });
+  };
+
+  const validateForm = () => {
+    let tempErrors = {};
+    
+    if (!formData.firstName.trim()) tempErrors.firstName = 'El nombre es obligatorio';
+    if (!formData.lastName.trim()) tempErrors.lastName = 'El apellido es obligatorio';
+    
+    if (!formData.email.trim()) {
+      tempErrors.email = 'El correo electrónico es obligatorio';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      tempErrors.email = 'Correo electrónico inválido';
+    }
+    
+    if (!formData.password) {
+      tempErrors.password = 'La contraseña es obligatoria';
+    } else if (formData.password.length < 6) {
+      tempErrors.password = 'La contraseña debe tener al menos 6 caracteres';
+    }
+    
+    if (formData.confirmPassword !== formData.password) {
+      tempErrors.confirmPassword = 'Las contraseñas no coinciden';
+    }
+    
+    if (!formData.agreeTerms) {
+      tempErrors.agreeTerms = 'Debes aceptar los términos y condiciones';
+    }
+    
+    setErrors(tempErrors);
+    return Object.keys(tempErrors).length === 0;
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (validateForm()) {
+      console.log('Form submitted:', formData);
+      // Aquí se implementará la lógica de registro con Django
+      // Esto se integrará más adelante con el backend
+    }
+  };
+
+  return (
+    <div className="auth-page">
+      <Navbar />
+      <div className="auth-container">
+        <div className="auth-card">
+          <div className="auth-header">
+            <h1>Crear Cuenta</h1>
+            <p>Únete a nuestra comunidad y comienza tu experiencia</p>
+          </div>
+          
+          <form className="auth-form" onSubmit={handleSubmit}>
+            <div className="form-row">
+              <div className="form-group">
+                <label htmlFor="firstName">Nombre</label>
+                <input
+                  type="text"
+                  id="firstName"
+                  name="firstName"
+                  value={formData.firstName}
+                  onChange={handleChange}
+                  placeholder="Tu nombre"
+                />
+                {errors.firstName && <span className="error-message">{errors.firstName}</span>}
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="lastName">Apellido</label>
+                <input
+                  type="text"
+                  id="lastName"
+                  name="lastName"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  placeholder="Tu apellido"
+                />
+                {errors.lastName && <span className="error-message">{errors.lastName}</span>}
+              </div>
+            </div>
+            
+            <div className="form-group">
+              <label htmlFor="email">Correo Electrónico</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="nombre@ejemplo.com"
+              />
+              {errors.email && <span className="error-message">{errors.email}</span>}
+            </div>
+            
+            <div className="form-group">
+              <label htmlFor="password">Contraseña</label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Crea una contraseña segura"
+              />
+              {errors.password && <span className="error-message">{errors.password}</span>}
+            </div>
+            
+            <div className="form-group">
+              <label htmlFor="confirmPassword">Confirmar Contraseña</label>
+              <input
+                type="password"
+                id="confirmPassword"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                placeholder="Repite tu contraseña"
+              />
+              {errors.confirmPassword && <span className="error-message">{errors.confirmPassword}</span>}
+            </div>
+            
+            <div className="form-options">
+              <div className="remember-me">
+                <input
+                  type="checkbox"
+                  id="agreeTerms"
+                  name="agreeTerms"
+                  checked={formData.agreeTerms}
+                  onChange={handleChange}
+                />
+                <label htmlFor="agreeTerms">
+                  Acepto los <Link to="/terms" className="auth-link">Términos y Condiciones</Link>
+                </label>
+              </div>
+              {errors.agreeTerms && <span className="error-message">{errors.agreeTerms}</span>}
+            </div>
+            
+            <button type="submit" className="auth-button">
+              Registrarme
+            </button>
+          </form>
+          
+          <div className="auth-footer">
+            <p>¿Ya tienes una cuenta?</p>
+            <Link to="/login" className="auth-link">Inicia sesión aquí</Link>
+          </div>
+        </div>
+      </div>
+      <Footer />
+    </div>
+  );
+};
+
+export default SignupPage; 

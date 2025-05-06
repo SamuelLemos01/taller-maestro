@@ -1,0 +1,241 @@
+.about-us-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.about-hero {
+  background-color: var(--primary-color, #A2D2FF);
+  color: white;
+  padding: 80px 0;
+  text-align: center;
+  background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), 
+                    url('https://images.unsplash.com/photo-1555921015-5532091f6026?ixlib=rb-1.2.1&auto=format&fit=crop&w=1500&q=80');
+  background-size: cover;
+  background-position: center;
+}
+
+.about-hero h1 {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
+}
+
+.about-hero p {
+  font-size: 1.2rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.about-content {
+  padding: 60px 0;
+}
+
+.about-section {
+  margin-bottom: 80px;
+}
+
+.about-section h2 {
+  font-size: 2.2rem;
+  color: var(--primary-color, #A2D2FF);
+  margin-bottom: 2rem;
+  position: relative;
+  padding-bottom: 15px;
+}
+
+.about-section h2::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 80px;
+  height: 3px;
+  background-color: var(--accent-color, #FFB5A7);
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: center;
+}
+
+.about-text p {
+  margin-bottom: 1.5rem;
+  line-height: 1.7;
+  color: var(--text-color, #333333);
+}
+
+.about-image img {
+  width: 100%;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.about-image img:hover {
+  transform: scale(1.02);
+}
+
+/* Valores */
+.values-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 30px;
+}
+
+.value-card {
+  background-color: white;
+  padding: 30px 20px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.value-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+}
+
+.value-icon {
+  font-size: 2.5rem;
+  color: var(--primary-color, #A2D2FF);
+  margin-bottom: 1rem;
+}
+
+.value-card h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: var(--text-color, #333333);
+}
+
+.value-card p {
+  color: var(--text-secondary, #6c757d);
+  line-height: 1.6;
+}
+
+/* Misión y Visión */
+.mission-vision-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+}
+
+.mission-box, .vision-box {
+  background-color: white;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+}
+
+.mission-box {
+  border-left: 5px solid var(--primary-color, #A2D2FF);
+}
+
+.vision-box {
+  border-left: 5px solid var(--accent-color, #FFB5A7);
+}
+
+.mission-box h2, .vision-box h2 {
+  margin-bottom: 1.5rem;
+  padding-bottom: 15px;
+  color: var(--text-color, #333333);
+}
+
+.mission-box h2::after {
+  background-color: var(--primary-color, #A2D2FF);
+}
+
+.vision-box h2::after {
+  background-color: var(--accent-color, #FFB5A7);
+}
+
+.mission-box p, .vision-box p {
+  line-height: 1.7;
+  margin-bottom: 1.5rem;
+  color: var(--text-secondary, #6c757d);
+}
+
+/* Equipo */
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 30px;
+}
+
+.team-member {
+  text-align: center;
+}
+
+.member-image {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin: 0 auto 20px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.member-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.member-image:hover img {
+  transform: scale(1.1);
+}
+
+.team-member h3 {
+  font-size: 1.3rem;
+  margin-bottom: 5px;
+  color: var(--text-color, #333333);
+}
+
+.member-role {
+  color: var(--primary-color, #A2D2FF);
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .values-grid, .team-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .about-grid, .mission-vision-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .about-hero {
+    padding: 60px 0;
+  }
+  
+  .about-hero h1 {
+    font-size: 2.5rem;
+  }
+  
+  .about-section {
+    margin-bottom: 60px;
+  }
+  
+  .mission-box, .vision-box {
+    padding: 30px;
+  }
+}
+
+@media (max-width: 576px) {
+  .values-grid, .team-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .member-image {
+    width: 150px;
+    height: 150px;
+  }
+} 
