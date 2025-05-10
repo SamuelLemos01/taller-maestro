@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import './ProductDetailPage.css';
+import Swal from 'sweetalert2';
+import { UserContext } from '../context/UserContext';
 
 const API_URL = 'http://localhost:8000/api/v1/products';
 
@@ -13,6 +15,7 @@ const ProductDetailPage = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { user } = useContext(UserContext);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -36,13 +39,56 @@ const ProductDetailPage = () => {
   }, [slug]);
 
   const handleAddToCart = () => {
-    // TODO: Implementar lógica del carrito
-    console.log('Agregar al carrito:', product);
+    if (!user) {
+      Swal.fire({
+        icon: 'info',
+        title: 'Inicia sesión',
+        text: 'Por favor inicia sesión para agregar productos al carrito.',
+        confirmButtonColor: '#3085d6',
+      });
+      return;
+    }
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    cart.push(product);
+    localStorage.setItem('cart', JSON.stringify(cart));
+    Swal.fire({
+      icon: 'success',
+      title: '¡Agregado al carrito!',
+      text: `${product.name} se agregó correctamente al carrito`,
+      timer: 1200,
+      showConfirmButton: false
+    });
   };
 
   const handleAddToFavorites = () => {
-    // TODO: Implementar lógica de favoritos
-    console.log('Agregar a favoritos:', product);
+    if (!user) {
+      Swal.fire({
+        icon: 'info',
+        title: 'Inicia sesión',
+        text: 'Por favor inicia sesión para agregar productos a favoritos.',
+        confirmButtonColor: '#3085d6',
+      });
+      return;
+    }
+    let favs = JSON.parse(localStorage.getItem('favorites')) || [];
+    if (!favs.find(f => f.id === product.id)) {
+      favs.push(product);
+      localStorage.setItem('favorites', JSON.stringify(favs));
+      Swal.fire({
+        icon: 'success',
+        title: '¡Agregado a Favoritos!',
+        text: `${product.name} ahora está en tus favoritos`,
+        timer: 1200,
+        showConfirmButton: false
+      });
+    } else {
+      Swal.fire({
+        icon: 'info',
+        title: 'Ya está en Favoritos',
+        timer: 1000,
+        showConfirmButton: false
+      });
+    }
   };
 
   if (loading) {
@@ -115,7 +161,7 @@ const ProductDetailPage = () => {
             <p>{product.description}</p>
           </div>
 
-          <div className="product-meta">
+          <div className="product-meta" style={{marginTop: '0.5rem', paddingTop: 0, borderTop: 'none'}}>
             <div className="stock-info">
               <span className="label">Stock:</span>
               <span className={`value ${product.stock > 0 ? 'in-stock' : 'out-of-stock'}`}>
@@ -124,17 +170,19 @@ const ProductDetailPage = () => {
             </div>
           </div>
 
-          <div className="product-actions">
+          <div className="product-actions product-actions-fullwidth">
             <button 
               className="btn-add-cart"
               onClick={handleAddToCart}
               disabled={product.stock === 0}
+              style={{transition: 'transform 0.1s'}}
             >
-              {product.stock > 0 ? 'Mirar más' : 'Sin Stock'}
+              <i className="fas fa-cart-plus"></i> {product.stock > 0 ? 'Agregar al carrito' : 'Sin Stock'}
             </button>
             <button 
               className="btn-add-favorite"
               onClick={handleAddToFavorites}
+              style={{transition: 'transform 0.1s'}}
             >
               <i className="fas fa-heart"></i> Agregar a Favoritos
             </button>

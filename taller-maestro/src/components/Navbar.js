@@ -1,12 +1,92 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useContext, useRef, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { UserContext } from '../context/UserContext';
 import './Navbar.css';
 import logo from '../assets/images/logoNormal.png';
+import Swal from 'sweetalert2';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [showFavorites, setShowFavorites] = useState(false);
+
+  const navigate = useNavigate();
+  const { user, setUser } = useContext(UserContext);
+
+  const dropdownRef = useRef();
+
+  // Cerrar dropdown al hacer clic fuera
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (
+        isUserDropdownOpen &&
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target)
+      ) {
+        setIsUserDropdownOpen(false);
+      }
+    }
+    if (isUserDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isUserDropdownOpen]);
+
+  const handleLogout = () => {
+    setUser(null);
+    setIsUserDropdownOpen(false);
+    Swal.fire({
+      icon: 'info',
+      title: 'Sesión cerrada',
+      text: 'Has cerrado sesión correctamente.',
+      confirmButtonColor: '#3085d6',
+      confirmButtonText: 'Entendido'
+    }).then(() => {
+      navigate('/', { state: { loggedOut: true } });
+    });
+  };
+
+  const getInitials = (user) => {
+    if (!user) return '';
+    const first = user.firstName ? user.firstName[0].toUpperCase() : '';
+    const last = user.lastName ? user.lastName[0].toUpperCase() : '';
+    return first + last;
+  };
+
+  const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+
+  const openFavoritesDrawer = () => {
+    setIsUserDropdownOpen(false);
+    setShowFavorites(true);
+  };
+  const closeFavoritesDrawer = () => setShowFavorites(false);
+
+  const handleGoToDetail = (id, slug, isOutOfStock) => {
+    if (!isOutOfStock) navigate(`/producto/${slug}`);
+  };
+
+  const handleRemoveFavorite = (id) => {
+    let favs = JSON.parse(localStorage.getItem('favorites')) || [];
+    favs = favs.filter(f => f.id !== id);
+    localStorage.setItem('favorites', JSON.stringify(favs));
+    window.location.reload(); // Para refrescar el panel
+  };
+
+  function stringToColor(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    let color = '#';
+    for (let i = 0; i < 3; i++) {
+      const value = (hash >> (i * 8)) & 0xFF;
+      color += ('00' + value.toString(16)).slice(-2);
+    }
+    return color;
+  }
 
   return (
     <nav className="navbar">
@@ -44,19 +124,61 @@ const Navbar = () => {
 
           <div className="user-icon">
             <button onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}>
-              <i className="fas fa-user"></i>
+              {user ? (
+                <span className="user-initials">{getInitials(user)}</span>
+              ) : (
+                <i className="fas fa-user"></i>
+              )}
             </button>
             {isUserDropdownOpen && (
-              <div className="user-dropdown">
-                <ul>
-                  <li><Link to="/login">Iniciar Sesión</Link></li>
-                  <li><Link to="/registro">Registrarse</Link></li>
-                  <li><Link to="/mi-cuenta">Mi Cuenta</Link></li>
-                  <li><Link to="/historial-compras">Historial de Compras</Link></li>
-                  <li><Link to="/politicas">Políticas</Link></li>
-                  <li><Link to="/logout">Cerrar Sesión</Link></li>
-                </ul>
-              </div>
+              <>
+                <div className="user-dropdown-overlay" style={{zIndex: 9997}}></div>
+                <div className="user-dropdown-content" ref={dropdownRef} style={{zIndex: 9999}}>
+                  {user ? (
+                    <>
+                      <div className="user-profile-info">
+                        <span
+                          className="user-initials-circle"
+                          style={{ background: stringToColor(user.email || user.firstName || '') }}
+                        >
+                          {getInitials(user)}
+                        </span>
+                        <div className="user-profile-details">
+                          <div className="user-profile-name">{user.firstName} {user.lastName}</div>
+                          <div className="user-profile-email">{user.email}</div>
+                        </div>
+                      </div>
+                      <ul className="user-dropdown-list">
+                        <li>
+                          <button className="favorites-link user-dropdown-list-link" type="button" onClick={openFavoritesDrawer}>
+                            <i className="fas fa-heart"></i> Mis Favoritos
+                          </button>
+                        </li>
+                        <li>
+                          <Link to="/historial-compras" className="user-dropdown-list-link" onClick={()=>setIsUserDropdownOpen(false)}>
+                            <i className="fas fa-history"></i> Historial
+                          </Link>
+                        </li>
+                        <li>
+                          <Link to="/terms" className="user-dropdown-list-link" onClick={()=>setIsUserDropdownOpen(false)}>
+                            <i className="fas fa-file-alt"></i> Términos y Condiciones
+                          </Link>
+                        </li>
+                        <li>
+                          <button className="logout-btn user-dropdown-list-link" type="button" onClick={handleLogout}>
+                            <i className="fas fa-sign-out-alt"></i> Cerrar Sesión
+                          </button>
+                        </li>
+                      </ul>
+                    </>
+                  ) : (
+                    <ul className="user-dropdown-list">
+                      <li><Link to="/login" className="user-dropdown-list-link" onClick={()=>setIsUserDropdownOpen(false)}>Iniciar Sesión</Link></li>
+                      <li><Link to="/registro" className="user-dropdown-list-link" onClick={()=>setIsUserDropdownOpen(false)}>Registrarse</Link></li>
+                    </ul>
+                  )}
+                </div>
+              </>
             )}
           </div>
         </div>
@@ -67,6 +189,40 @@ const Navbar = () => {
           </button>
         </div>
       </div>
+
+      {/* Drawer de favoritos */}
+      {showFavorites && (
+        <>
+          <div className="favorites-overlay" onClick={closeFavoritesDrawer}></div>
+          <div className="favorites-drawer">
+            <button className="favorites-close" onClick={closeFavoritesDrawer}>&times;</button>
+            <h4>Favoritos</h4>
+            {favorites.length === 0 ? (
+              <div className="favorites-empty">No tienes favoritos aún.</div>
+            ) : (
+              <ul className="favorites-list">
+                {favorites.map(fav => {
+                  const isOut = fav.stock === 0;
+                  return (
+                    <li key={fav.id} className={`favorite-item${isOut ? ' favorite-item-out' : ''}`}
+                        onClick={() => handleGoToDetail(fav.id, fav.slug, isOut)}
+                        style={{cursor: isOut ? 'not-allowed' : 'pointer'}}
+                    >
+                      <img src={fav.image} alt={fav.name} className="favorite-thumb" />
+                      <div className="favorite-info">
+                        <div className="favorite-title">{fav.name}</div>
+                        <div className="favorite-price">${fav.price?.toLocaleString('es-CO')}</div>
+                        <div className={`favorite-stock ${isOut ? 'out' : 'in'}`}>{isOut ? 'Agotado' : `${fav.stock} unidades`}</div>
+                      </div>
+                      <button className="favorite-remove" onClick={e => {e.stopPropagation(); handleRemoveFavorite(fav.id);}} title="Eliminar">&times;</button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+        </>
+      )}
     </nav>
   );
 };

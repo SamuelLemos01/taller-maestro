@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import './AuthPages.css';
+import Swal from 'sweetalert2';
 
 const SignupPage = () => {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
+    phone: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -15,6 +17,7 @@ const SignupPage = () => {
   });
 
   const [errors, setErrors] = useState({});
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -29,6 +32,12 @@ const SignupPage = () => {
     
     if (!formData.firstName.trim()) tempErrors.firstName = 'El nombre es obligatorio';
     if (!formData.lastName.trim()) tempErrors.lastName = 'El apellido es obligatorio';
+
+    if (!formData.phone.trim()){
+      tempErrors.phone = 'El numero de teléfono de usuario es obligatorio';
+    } else if (!/^\d{10}$/.test(formData.phone)) {
+      tempErrors.phone = 'El numero de teléfono debe tener 10 dígitos';
+    }
     
     if (!formData.email.trim()) {
       tempErrors.email = 'El correo electrónico es obligatorio';
@@ -54,12 +63,44 @@ const SignupPage = () => {
     return Object.keys(tempErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (validateForm()) {
-      console.log('Form submitted:', formData);
-      // Aquí se implementará la lógica de registro con Django
-      // Esto se integrará más adelante con el backend
+      try {
+        const response = await fetch('http://localhost:8000/api/auth/signup/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            phone: formData.phone,
+            email: formData.email,
+            password: formData.password
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Error al registrar usuario');
+        }
+
+        // Registro exitoso: redirige al login con estado
+        navigate('/login', { state: { registered: true } });
+      } catch (error) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: error.message || 'Error al registrar usuario',
+          confirmButtonColor: '#d33'
+        });
+        setErrors(prev => ({
+          ...prev,
+          submit: error.message
+        }));
+      }
     }
   };
 
@@ -101,7 +142,20 @@ const SignupPage = () => {
                 {errors.lastName && <span className="error-message">{errors.lastName}</span>}
               </div>
             </div>
-            
+
+            <div className="form-group">
+              <label htmlFor="phone">Teléfono</label>
+              <input
+                type="text"
+                id="phone"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                placeholder="Tu numero de teléfono"
+              />
+              {errors.phone && <span className="error-message">{errors.phone}</span>}
+            </div>
+
             <div className="form-group">
               <label htmlFor="email">Correo Electrónico</label>
               <input
@@ -157,7 +211,12 @@ const SignupPage = () => {
               {errors.agreeTerms && <span className="error-message">{errors.agreeTerms}</span>}
             </div>
             
-            <button type="submit" className="auth-button">
+            <button
+              type="submit"
+              className="auth-button"
+              disabled={!formData.agreeTerms}
+              style={{ opacity: formData.agreeTerms ? 1 : 0.5, cursor: formData.agreeTerms ? 'pointer' : 'not-allowed' }}
+            >
               Registrarme
             </button>
           </form>

@@ -1,10 +1,37 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useContext } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import './AuthPages.css';
+import Swal from 'sweetalert2';
+import { UserContext } from '../context/UserContext';
 
-const LoginPage = () => {
+const LoginPage = (props) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { setUser } = useContext(UserContext);
+
+  useEffect(() => {
+    if (location.state && location.state.registered) {
+      Swal.fire({
+        icon: 'success',
+        title: '¡Registro exitoso!',
+        text: 'Por favor inicia sesión ahora.',
+        confirmButtonColor: '#3085d6',
+        confirmButtonText: 'Entendido'
+      });
+    }
+    if (location.state && location.state.loggedOut) {
+      Swal.fire({
+        icon: 'info',
+        title: 'Sesión cerrada',
+        text: 'Has cerrado sesión correctamente.',
+        confirmButtonColor: '#3085d6',
+        confirmButtonText: 'Entendido'
+      });
+    }
+  }, [location.state]);
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -38,12 +65,46 @@ const LoginPage = () => {
     return Object.keys(tempErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (validateForm()) {
-      console.log('Form submitted:', formData);
-      // Aquí se implementará la lógica de inicio de sesión con Django
-      // Esto se integrará más adelante con el backend
+      try {
+        const response = await fetch('http://localhost:8000/api/auth/login/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: formData.email,
+            password: formData.password
+          })
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || 'Error al iniciar sesión');
+        }
+        setUser(data.user);
+        Swal.fire({
+          icon: 'success',
+          title: '¡Bienvenido!',
+          text: 'Inicio de sesión exitoso',
+          confirmButtonColor: '#3085d6',
+          confirmButtonText: 'Continuar'
+        }).then(() => {
+          navigate('/');
+        });
+      } catch (error) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: error.message || 'Error al iniciar sesión',
+          confirmButtonColor: '#d33'
+        });
+        setErrors(prev => ({
+          ...prev,
+          submit: error.message
+        }));
+      }
     }
   };
 
