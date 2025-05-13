@@ -2,6 +2,7 @@ from django.db import models
 from django.utils import timezone
 from django.urls import reverse
 from django.utils.text import slugify
+from django.contrib.auth.models import User 
 
 class Category(models.Model):
     name = models.CharField(max_length=100, verbose_name="Nombre")
@@ -42,8 +43,7 @@ class Product(models.Model):
     is_featured = models.BooleanField(default=False, verbose_name="Destacado")
     is_new = models.BooleanField(default=True, verbose_name="Nuevo")
     in_catalog = models.BooleanField(default=True, verbose_name="Mostrar en Catálogo")
-    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, 
-                               related_name='products', verbose_name="Categoría")
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name='products', verbose_name="Categoría")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de creación")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Última actualización")
 
@@ -68,3 +68,14 @@ class Product(models.Model):
         elif (timezone.now() - self.created_at).days > 30:
             self.is_new = False
         super().save(*args, **kwargs)
+
+class Favorite(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorites')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='favorited_by')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'product')  # Un usuario no puede tener el mismo producto dos veces
+
+    def __str__(self):
+        return f"{self.user.username} - {self.product.name}"

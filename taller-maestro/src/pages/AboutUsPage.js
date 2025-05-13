@@ -97,43 +97,7 @@ const AboutUsPage = () => {
               </div>
             </div>
           </section>
-          
-          <section className="about-section team-section">
-            <h2>Nuestro Equipo</h2>
-            <div className="team-grid">
-              <div className="team-member">
-                <div className="member-image">
-                  <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" alt="Carlos Martínez" />
-                </div>
-                <h3>Carlos Martínez</h3>
-                <p className="member-role">Fundador y Maestro Artesano</p>
-              </div>
-              
-              <div className="team-member">
-                <div className="member-image">
-                  <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" alt="Ana López" />
-                </div>
-                <h3>Ana López</h3>
-                <p className="member-role">Directora Creativa</p>
-              </div>
-              
-              <div className="team-member">
-                <div className="member-image">
-                  <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" alt="Miguel Sánchez" />
-                </div>
-                <h3>Miguel Sánchez</h3>
-                <p className="member-role">Jefe de Producción</p>
-              </div>
-              
-              <div className="team-member">
-                <div className="member-image">
-                  <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" alt="Laura Gómez" />
-                </div>
-                <h3>Laura Gómez</h3>
-                <p className="member-role">Responsable de Atención al Cliente</p>
-              </div>
-            </div>
-          </section>
+        
         </div>
       </div>
       
