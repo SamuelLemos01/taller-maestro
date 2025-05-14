@@ -69,7 +69,7 @@ const LoginPage = (props) => {
     e.preventDefault();
     if (validateForm()) {
       try {
-        const response = await fetch('http://localhost:8000/api/auth/login/', {
+        const response = await fetch('http://localhost:8000/api/token/', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -81,9 +81,14 @@ const LoginPage = (props) => {
         });
         const data = await response.json();
         if (!response.ok) {
-          throw new Error(data.error || 'Error al iniciar sesión');
+          throw new Error(data.detail || data.error || 'Error al iniciar sesión');
         }
-        setUser(data.user);
+        setUser({
+          email: formData.email,
+          token: data.access,
+          firstName: data.first_name || data.firstName,
+          lastName: data.last_name || data.lastName
+        });
         Swal.fire({
           icon: 'success',
           title: '¡Bienvenido!',
@@ -168,7 +173,7 @@ const LoginPage = (props) => {
           
           <div className="auth-footer">
             <p>¿No tienes una cuenta?</p>
-            <Link to="/signup" className="auth-link">Regístrate aquí</Link>
+            <Link to="/registro" className="auth-link">Regístrate aquí</Link>
           </div>
         </div>
       </div>

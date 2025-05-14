@@ -3,6 +3,7 @@ from django.utils import timezone
 from django.urls import reverse
 from django.utils.text import slugify
 from django.contrib.auth.models import User 
+from django.conf import settings
 
 class Category(models.Model):
     name = models.CharField(max_length=100, verbose_name="Nombre")
@@ -70,7 +71,7 @@ class Product(models.Model):
         super().save(*args, **kwargs)
 
 class Favorite(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorites')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='favorites')
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='favorited_by')
     created_at = models.DateTimeField(auto_now_add=True)
 

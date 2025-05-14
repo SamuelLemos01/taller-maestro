@@ -5,6 +5,7 @@ import Footer from '../components/Footer';
 import './ProductDetailPage.css';
 import Swal from 'sweetalert2';
 import { UserContext } from '../context/UserContext';
+import { addToFavorites } from '../services/favoritesService';
 
 const API_URL = 'http://localhost:8000/api/v1/products';
 
@@ -60,7 +61,7 @@ const ProductDetailPage = () => {
     });
   };
 
-  const handleAddToFavorites = () => {
+  const handleAddToFavorites = async () => {
     if (!user) {
       Swal.fire({
         icon: 'info',
@@ -70,10 +71,8 @@ const ProductDetailPage = () => {
       });
       return;
     }
-    let favs = JSON.parse(localStorage.getItem('favorites')) || [];
-    if (!favs.find(f => f.id === product.id)) {
-      favs.push(product);
-      localStorage.setItem('favorites', JSON.stringify(favs));
+    try {
+      await addToFavorites(product.id, user.token);
       Swal.fire({
         icon: 'success',
         title: '¡Agregado a Favoritos!',
@@ -81,12 +80,13 @@ const ProductDetailPage = () => {
         timer: 1200,
         showConfirmButton: false
       });
-    } else {
+    } catch (error) {
+      console.error('Error al agregar a favoritos:', error);
       Swal.fire({
-        icon: 'info',
-        title: 'Ya está en Favoritos',
-        timer: 1000,
-        showConfirmButton: false
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudo agregar a favoritos',
+        confirmButtonColor: '#3085d6',
       });
     }
   };

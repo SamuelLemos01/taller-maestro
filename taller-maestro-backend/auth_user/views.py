@@ -5,6 +5,9 @@ from django.contrib.auth.hashers import make_password, check_password
 import json
 from .models import User
 from django.contrib.auth import logout
+from rest_framework_simplejwt.views import TokenObtainPairView
+from .serializers import EmailTokenObtainPairSerializer
+
 # Create your views here.
 
 @csrf_exempt
@@ -86,3 +89,6 @@ def login_user(request):
 #def logout(request):
  #   logout(request)
   #  return redirect('')
+
+class EmailTokenObtainPairView(TokenObtainPairView):
+    serializer_class = EmailTokenObtainPairSerializer

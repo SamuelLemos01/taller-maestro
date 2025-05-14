@@ -1,7 +1,14 @@
-# Taller Maestro
+# Taller del Maestro
 
 ## Descripción
-Sitio web para un taller mecánico que permite a los clientes ver productos, servicios y realizar consultas.
+Tienda online de productos artesanales con panel de favoritos por usuario y autenticación segura con JWT (login por email).
+
+## Características principales
+- Catálogo de productos con filtros y búsqueda.
+- Panel de favoritos único por usuario (requiere autenticación).
+- Autenticación JWT usando email (no username).
+- Seguridad reforzada: expiración y rotación de tokens, blacklist, CORS seguro.
+- Backend en Django + DRF, frontend en React.
 
 ## Estructura del Proyecto
 
@@ -39,20 +46,41 @@ Sitio web para un taller mecánico que permite a los clientes ver productos, ser
 
 ## Instalación
 
-1. Clonar el repositorio
-```bash
-git clone [url-del-repositorio]
-```
+### Backend
+1. Instala dependencias:
+   ```bash
+   pip install -r requirements.txt
+   ```
+2. Realiza migraciones y crea un superusuario:
+   ```bash
+   python manage.py makemigrations
+   python manage.py migrate
+   python manage.py createsuperuser
+   ```
+3. Ejecuta el servidor:
+   ```bash
+   python manage.py runserver
+   ```
 
-2. Instalar dependencias
-```bash
-npm install
-```
+### Frontend
+1. Instala dependencias:
+   ```bash
+   npm install
+   ```
+2. Ejecuta la app:
+   ```bash
+   npm start
+   ```
 
-3. Iniciar el servidor de desarrollo
-```bash
-npm start
-```
+## Notas de seguridad
+- Usa HTTPS en producción.
+- Configura correctamente CORS y los tokens en el frontend.
+- Haz commits frecuentes para evitar pérdida de trabajo.
+
+---
+
+## Autores
+- Equipo Taller del Maestro
 
 ## Descripción de los Componentes
 

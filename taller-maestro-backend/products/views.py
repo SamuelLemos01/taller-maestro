@@ -1,8 +1,8 @@
 from django.shortcuts import render
-from rest_framework import generics
+from rest_framework import generics, viewsets, permissions
 from django.db.models import Q
-from .models import Product, Category
-from .serializers import ProductSerializer, CategorySerializer, ProductDetailSerializer
+from .models import Product, Category, Favorite
+from .serializers import ProductSerializer, CategorySerializer, ProductDetailSerializer, FavoriteSerializer
 
 # Create your views here.
 
@@ -63,3 +63,13 @@ class NewProductListView(generics.ListAPIView):
 
     def get_queryset(self):
         return Product.objects.filter(is_new=True)
+
+class FavoriteViewSet(viewsets.ModelViewSet):
+    serializer_class = FavoriteSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Favorite.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)

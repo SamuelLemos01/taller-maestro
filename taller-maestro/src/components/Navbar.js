@@ -4,12 +4,15 @@ import { UserContext } from '../context/UserContext';
 import './Navbar.css';
 import logo from '../assets/images/logoNormal.png';
 import Swal from 'sweetalert2';
+import { getFavorites, removeFromFavorites } from '../services/favoritesService';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [showFavorites, setShowFavorites] = useState(false);
+  const [favorites, setFavorites] = useState([]);
+  const [loadingFavorites, setLoadingFavorites] = useState(false);
 
   const navigate = useNavigate();
   const { user, setUser } = useContext(UserContext);
@@ -35,6 +38,21 @@ const Navbar = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isUserDropdownOpen]);
 
+  useEffect(() => {
+    const reloadFavorites = () => {
+      if (user) {
+        setLoadingFavorites(true);
+        getFavorites(user.token)
+          .then(setFavorites)
+          .catch(() => setFavorites([]))
+          .finally(() => setLoadingFavorites(false));
+      }
+    };
+    reloadFavorites();
+    window.addEventListener('favorites-updated', reloadFavorites);
+    return () => window.removeEventListener('favorites-updated', reloadFavorites);
+  }, [user]);
+
   const handleLogout = () => {
     setUser(null);
     setIsUserDropdownOpen(false);
@@ -51,12 +69,10 @@ const Navbar = () => {
 
   const getInitials = (user) => {
     if (!user) return '';
-    const first = user.firstName ? user.firstName[0].toUpperCase() : '';
-    const last = user.lastName ? user.lastName[0].toUpperCase() : '';
-    return first + last;
+    const first = user.firstName || user.first_name || '';
+    const last = user.lastName || user.last_name || '';
+    return `${first.charAt(0)}${last.charAt(0)}`.toUpperCase();
   };
-
-  const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
 
   const openFavoritesDrawer = () => {
     setIsUserDropdownOpen(false);
@@ -68,11 +84,28 @@ const Navbar = () => {
     if (!isOutOfStock) navigate(`/producto/${slug}`);
   };
 
-  const handleRemoveFavorite = (id) => {
-    let favs = JSON.parse(localStorage.getItem('favorites')) || [];
-    favs = favs.filter(f => f.id !== id);
-    localStorage.setItem('favorites', JSON.stringify(favs));
-    window.location.reload(); // Para refrescar el panel
+  const handleRemoveFavorite = async (id) => {
+    if (!user) return;
+    try {
+      await removeFromFavorites(id, user.token);
+      setFavorites(favorites.filter(fav => fav.id !== id));
+      Swal.fire({
+        icon: 'success',
+        title: 'Eliminado',
+        text: 'El producto fue eliminado de tus favoritos',
+        timer: 1000,
+        showConfirmButton: false
+      });
+      // Lanzar evento para actualizar favoritos en otros componentes si es necesario
+      window.dispatchEvent(new Event('favorites-updated'));
+    } catch (error) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudo eliminar el favorito',
+        confirmButtonColor: '#d33'
+      });
+    }
   };
 
   function stringToColor(str) {
@@ -190,7 +223,7 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Drawer de favoritos */}
+      {/*favoritos */}
       {showFavorites && (
         <>
           <div className="favorites-overlay" onClick={closeFavoritesDrawer}></div>
@@ -202,17 +235,17 @@ const Navbar = () => {
             ) : (
               <ul className="favorites-list">
                 {favorites.map(fav => {
-                  const isOut = fav.stock === 0;
+                  const isOut = fav.product && fav.product.stock === 0;
                   return (
                     <li key={fav.id} className={`favorite-item${isOut ? ' favorite-item-out' : ''}`}
-                        onClick={() => handleGoToDetail(fav.id, fav.slug, isOut)}
+                        onClick={() => handleGoToDetail(fav.product?.id, fav.product?.slug, isOut)}
                         style={{cursor: isOut ? 'not-allowed' : 'pointer'}}
                     >
-                      <img src={fav.image} alt={fav.name} className="favorite-thumb" />
+                      <img src={fav.product?.image} alt={fav.product?.name} className="favorite-thumb" />
                       <div className="favorite-info">
-                        <div className="favorite-title">{fav.name}</div>
-                        <div className="favorite-price">${fav.price?.toLocaleString('es-CO')}</div>
-                        <div className={`favorite-stock ${isOut ? 'out' : 'in'}`}>{isOut ? 'Agotado' : `${fav.stock} unidades`}</div>
+                        <div className="favorite-title">{fav.product?.name}</div>
+                        <div className="favorite-price">${fav.product?.price?.toLocaleString('es-CO')}</div>
+                        <div className={`favorite-stock ${isOut ? 'out' : 'in'}`}>{isOut ? 'Agotado' : `${fav.product?.stock} unidades`}</div>
                       </div>
                       <button className="favorite-remove" onClick={e => {e.stopPropagation(); handleRemoveFavorite(fav.id);}} title="Eliminar">&times;</button>
                     </li>
