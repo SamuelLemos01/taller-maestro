@@ -5,7 +5,7 @@ import Footer from '../components/Footer';
 import './ProductDetailPage.css';
 import Swal from 'sweetalert2';
 import { UserContext } from '../context/UserContext';
-import { addToFavorites } from '../services/favoritesService';
+import { addToFavorites, getFavorites } from '../services/favoritesService';
 
 const API_URL = 'http://localhost:8000/api/v1/products';
 
@@ -17,6 +17,7 @@ const ProductDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { user } = useContext(UserContext);
+  const [favorites, setFavorites] = useState([]);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -35,9 +36,25 @@ const ProductDetailPage = () => {
         setLoading(false);
       }
     };
-
     fetchProduct();
-  }, [slug]);
+    // Consultar favoritos si hay usuario
+    if (user) {
+      getFavorites(user.token)
+        .then(setFavorites)
+        .catch(() => setFavorites([]));
+    }
+  }, [slug, user]);
+
+  useEffect(() => {
+    if (!user) return;
+    const reloadFavorites = () => {
+      getFavorites(user.token)
+        .then(setFavorites)
+        .catch(() => setFavorites([]));
+    };
+    window.addEventListener('favorites-updated', reloadFavorites);
+    return () => window.removeEventListener('favorites-updated', reloadFavorites);
+  }, [user]);
 
   const handleAddToCart = () => {
     if (!user) {
@@ -73,6 +90,7 @@ const ProductDetailPage = () => {
     }
     try {
       await addToFavorites(product.id, user.token);
+      window.dispatchEvent(new Event('favorites-updated'));
       Swal.fire({
         icon: 'success',
         title: '¡Agregado a Favoritos!',
@@ -90,6 +108,8 @@ const ProductDetailPage = () => {
       });
     }
   };
+
+  const isFavorite = favorites.some(fav => fav.product?.id === product?.id);
 
   if (loading) {
     return (
@@ -183,8 +203,9 @@ const ProductDetailPage = () => {
               className="btn-add-favorite"
               onClick={handleAddToFavorites}
               style={{transition: 'transform 0.1s'}}
+              disabled={isFavorite}
             >
-              <i className="fas fa-heart"></i> Agregar a Favoritos
+              <i className="fas fa-heart"></i> {isFavorite ? 'Ya en Favoritos' : 'Agregar a Favoritos'}
             </button>
           </div>
         </div>

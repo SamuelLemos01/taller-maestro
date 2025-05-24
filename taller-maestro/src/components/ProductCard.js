@@ -35,7 +35,7 @@ const ProductCard = ({ product }) => {
                         className={`product-button ${product.stock === 0 ? 'disabled' : ''}`}
                         disabled={product.stock === 0}
                     >
-                        {product.stock > 0 ? 'Agregar' : 'Sin stock'}
+                        {product.stock > 0 ? 'Mirar más' : 'Sin stock'}
                     </button>
                 </div>
             </div>
