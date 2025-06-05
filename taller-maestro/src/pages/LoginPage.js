@@ -83,9 +83,14 @@ const LoginPage = (props) => {
         if (!response.ok) {
           throw new Error(data.detail || data.error || 'Error al iniciar sesión');
         }
+        
+        // Guardar el refresh token por separado
+        localStorage.setItem('refreshToken', data.refresh);
+        
         setUser({
           email: formData.email,
           token: data.access,
+          refreshToken: data.refresh,
           firstName: data.first_name || data.firstName,
           lastName: data.last_name || data.lastName
         });

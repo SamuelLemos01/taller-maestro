@@ -5,6 +5,7 @@ import './Navbar.css';
 import logo from '../assets/images/logoNormal.png';
 import Swal from 'sweetalert2';
 import { getFavorites, removeFromFavorites } from '../services/favoritesService';
+import { logoutUser } from '../utils/authUtils';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -42,19 +43,22 @@ const Navbar = () => {
     const reloadFavorites = () => {
       if (user) {
         setLoadingFavorites(true);
-        getFavorites(user.token)
+        getFavorites(user, setUser, navigate)
           .then(setFavorites)
-          .catch(() => setFavorites([]))
+          .catch((error) => {
+            console.error('Error al cargar favoritos:', error);
+            setFavorites([]);
+          })
           .finally(() => setLoadingFavorites(false));
       }
     };
     reloadFavorites();
     window.addEventListener('favorites-updated', reloadFavorites);
     return () => window.removeEventListener('favorites-updated', reloadFavorites);
-  }, [user]);
+  }, [user, setUser, navigate]);
 
   const handleLogout = () => {
-    setUser(null);
+    logoutUser(setUser, navigate, false);
     setIsUserDropdownOpen(false);
     Swal.fire({
       icon: 'info',
@@ -62,8 +66,6 @@ const Navbar = () => {
       text: 'Has cerrado sesión correctamente.',
       confirmButtonColor: '#3085d6',
       confirmButtonText: 'Entendido'
-    }).then(() => {
-      navigate('/', { state: { loggedOut: true } });
     });
   };
 
@@ -87,7 +89,7 @@ const Navbar = () => {
   const handleRemoveFavorite = async (id) => {
     if (!user) return;
     try {
-      await removeFromFavorites(id, user.token);
+      await removeFromFavorites(id, user, setUser, navigate);
       setFavorites(favorites.filter(fav => fav.id !== id));
       Swal.fire({
         icon: 'success',
@@ -99,12 +101,17 @@ const Navbar = () => {
       // Lanzar evento para actualizar favoritos en otros componentes si es necesario
       window.dispatchEvent(new Event('favorites-updated'));
     } catch (error) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'No se pudo eliminar el favorito',
-        confirmButtonColor: '#d33'
-      });
+      console.error('Error al eliminar favorito:', error);
+      if (error.message === 'Sesión expirada' || error.message === 'Usuario no autenticado') {
+        logoutUser(setUser, navigate);
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo eliminar el favorito',
+          confirmButtonColor: '#d33'
+        });
+      }
     }
   };
 

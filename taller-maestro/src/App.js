@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { UserProvider } from './context/UserContext';
+import AuthLoader from './components/AuthLoader';
 import './App.css';
 
 // Importar componentes
@@ -20,20 +21,22 @@ function App() {
   return (
     <UserProvider>
       <Router>
-        <div className="app">
-          <main>
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/catalogo" element={<CatalogPage />} />
-              <Route path="/quienes-somos" element={<AboutUsPage />} />
-              <Route path="/contacto" element={<ContactPage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/registro" element={<SignupPage />} />
-              <Route path="/reset-password" element={<ResetPasswordPage />} />
-              <Route path="/producto/:slug" element={<ProductDetailPage />} />
-            </Routes>
-          </main>
-        </div>
+        <AuthLoader>
+          <div className="app">
+            <main>
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/catalogo" element={<CatalogPage />} />
+                <Route path="/quienes-somos" element={<AboutUsPage />} />
+                <Route path="/contacto" element={<ContactPage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/registro" element={<SignupPage />} />
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
+                <Route path="/producto/:slug" element={<ProductDetailPage />} />
+              </Routes>
+            </main>
+          </div>
+        </AuthLoader>
       </Router>
     </UserProvider>
   );

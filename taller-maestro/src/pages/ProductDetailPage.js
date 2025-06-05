@@ -6,6 +6,7 @@ import './ProductDetailPage.css';
 import Swal from 'sweetalert2';
 import { UserContext } from '../context/UserContext';
 import { addToFavorites, getFavorites } from '../services/favoritesService';
+import { logoutUser } from '../utils/authUtils';
 
 const API_URL = 'http://localhost:8000/api/v1/products';
 
@@ -16,7 +17,7 @@ const ProductDetailPage = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { user } = useContext(UserContext);
+  const { user, setUser } = useContext(UserContext);
   const [favorites, setFavorites] = useState([]);
 
   useEffect(() => {
@@ -39,22 +40,28 @@ const ProductDetailPage = () => {
     fetchProduct();
     // Consultar favoritos si hay usuario
     if (user) {
-      getFavorites(user.token)
+      getFavorites(user, setUser, navigate)
         .then(setFavorites)
-        .catch(() => setFavorites([]));
+        .catch((error) => {
+          console.error('Error al cargar favoritos:', error);
+          setFavorites([]);
+        });
     }
-  }, [slug, user]);
+  }, [slug, user, setUser, navigate]);
 
   useEffect(() => {
     if (!user) return;
     const reloadFavorites = () => {
-      getFavorites(user.token)
+      getFavorites(user, setUser, navigate)
         .then(setFavorites)
-        .catch(() => setFavorites([]));
+        .catch((error) => {
+          console.error('Error al recargar favoritos:', error);
+          setFavorites([]);
+        });
     };
     window.addEventListener('favorites-updated', reloadFavorites);
     return () => window.removeEventListener('favorites-updated', reloadFavorites);
-  }, [user]);
+  }, [user, setUser, navigate]);
 
   const handleAddToCart = () => {
     if (!user) {
@@ -89,7 +96,7 @@ const ProductDetailPage = () => {
       return;
     }
     try {
-      await addToFavorites(product.id, user.token);
+      await addToFavorites(product.id, user, setUser, navigate);
       window.dispatchEvent(new Event('favorites-updated'));
       Swal.fire({
         icon: 'success',
@@ -100,12 +107,16 @@ const ProductDetailPage = () => {
       });
     } catch (error) {
       console.error('Error al agregar a favoritos:', error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'No se pudo agregar a favoritos',
-        confirmButtonColor: '#3085d6',
-      });
+      if (error.message === 'Sesión expirada' || error.message === 'Usuario no autenticado') {
+        logoutUser(setUser, navigate);
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo agregar a favoritos',
+          confirmButtonColor: '#3085d6',
+        });
+      }
     }
   };
 

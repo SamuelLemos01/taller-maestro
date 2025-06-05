@@ -17,8 +17,6 @@ const Footer = () => {
             <div className="social-icons">
               <a href="#"><i className="fab fa-facebook"></i></a>
               <a href="#"><i className="fab fa-instagram"></i></a>
-              <a href="#"><i className="fab fa-twitter"></i></a>
-              <a href="#"><i className="fab fa-pinterest"></i></a>
             </div>
           </div>
 
@@ -36,10 +34,9 @@ const Footer = () => {
 
           <div className="footer-section contact">
             <h3 className="footer-title">Contacto</h3>
-            <p><i className="fas fa-map-marker-alt"></i> Calle Principal #123, Ciudad</p>
-            <p><i className="fas fa-phone"></i> +1 (123) 456-7890</p>
+            <p><i className="fas fa-phone"></i> Numero de Laura</p>
             <p><i className="fas fa-envelope"></i> info@tallerdelmaestro.com</p>
-            <p><i className="fas fa-clock"></i> Lunes a Viernes: 9:00 AM - 6:00 PM</p>
+            <p><i className="fas fa-clock"></i> Lunes a Viernes: 9:00 AM - 7:00 PM</p>
           </div>
         </div>
 

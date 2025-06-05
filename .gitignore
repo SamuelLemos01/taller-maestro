@@ -1,0 +1,89 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# Build outputs
+build/
+dist/
+taller-maestro/build/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# React
+*.tgz
+*.tar.gz
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Django
+taller-maestro-backend/db.sqlite3
+taller-maestro-backend/db.sqlite3-journal
+taller-maestro-backend/media/
+taller-maestro-backend/staticfiles/
+taller-maestro-backend/static/
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# IDE and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# Backup files
+*.bak
+*.tmp
+*.temp
+
+# Package files
+*.egg-info/
+
+# Documentation
+docs/_build/
+
+# Local configuration
+local_settings.py 

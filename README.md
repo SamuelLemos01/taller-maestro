@@ -1,4 +1,4 @@
-# El Taller del Maestro
+# El Taller del Maestro 🛠️
 
 ## Índice
 - [Descripción](#descripción)
@@ -8,7 +8,9 @@
 - [Backend (Django)](#backend-django)
 - [Frontend (React)](#frontend-react)
 - [Favoritos: Integración y Sincronización](#favoritos-integración-y-sincronización)
+- [Componentes Principales](#componentes-principales)
 - [Notas de Seguridad](#notas-de-seguridad)
+- [Documentación Completa](#documentación-completa)
 - [Troubleshooting](#troubleshooting)
 
 ---
@@ -21,10 +23,10 @@ El Taller del Maestro es una plataforma web para la gestión y venta de producto
 
 ## Requisitos
 
-- Python 3.9+
-- Node.js 16+
-- npm 8+
-- (Recomendado) Virtualenv para Python
+- **Python 3.9+**
+- **Node.js 16+**
+- **npm 8+**
+- **(Recomendado) Virtualenv para Python**
 
 ---
 
@@ -32,7 +34,7 @@ El Taller del Maestro es una plataforma web para la gestión y venta de producto
 
 ### 1. Clona el repositorio
 ```bash
-git clone <URL_DEL_REPO>
+git clone <URL_DEL_REPOSITORIO>
 cd taller-maestro
 ```
 
@@ -76,8 +78,11 @@ taller-maestro/
 │   │   ├── components/       # Componentes reutilizables (Navbar, Footer, etc)
 │   │   ├── pages/            # Páginas principales (Login, Signup, ProductDetail, etc)
 │   │   ├── context/          # Contextos globales (UserContext)
+│   │   ├── services/         # Servicios API (favoritesService, etc)
+│   │   ├── utils/            # Utilidades (authUtils, etc)
 │   │   └── ...
 │   └── ...
+├── docs/                     # Documentación completa del proyecto
 └── README.md
 ```
 
@@ -115,6 +120,7 @@ taller-maestro/
   - `src/pages/`: LoginPage, SignupPage, ProductDetailPage, etc.
   - `src/context/UserContext.js`: Manejo global de usuario autenticado.
   - `src/services/favoritesService.js`: Lógica para consumir la API de favoritos con JWT.
+  - `src/utils/authUtils.js`: Sistema completo de autenticación JWT con renovación automática.
 
 **Principales páginas:**
 - `/login`: Inicio de sesión (solo email y contraseña)
@@ -139,6 +145,7 @@ taller-maestro/
 - **Autenticación JWT:**
   - Todas las operaciones de favoritos requieren que el usuario esté autenticado y se envía el token JWT en cada petición.
   - El login y registro solo requieren email y contraseña (no username).
+  - **Sistema de renovación automática**: Los tokens se renuevan automáticamente sin intervención del usuario.
 
 ---
 
@@ -162,6 +169,11 @@ taller-maestro/
 ### UserContext
 - Provee el usuario autenticado y el token JWT a toda la app.
 - Permite login, logout y persistencia en localStorage.
+- **Verificación automática de tokens** al inicializar la aplicación.
+
+### AuthLoader
+- Componente que muestra un spinner mientras se verifica el estado de autenticación inicial.
+- Evita parpadeos y problemas de renderizado durante la carga.
 
 ---
 
@@ -170,7 +182,26 @@ taller-maestro/
 - El backend usa hash seguro para contraseñas.
 - El frontend nunca guarda la contraseña.
 - El token JWT se almacena solo en memoria/contexto y localStorage de forma segura.
+- **Sistema JWT robusto**: Access tokens de 30 min, refresh tokens de 1 día con renovación automática.
+- **Verificación de expiración**: Tokens se verifican antes de cada petición con margen de seguridad.
+- **Logout automático**: En caso de tokens expirados o errores de autenticación.
 - Se recomienda usar HTTPS en producción.
+
+---
+
+## Documentación Completa 📚
+
+Para información detallada sobre desarrollo, APIs, componentes y configuración:
+
+**📖 [Ver Documentación Completa](./docs/README.md)**
+
+La documentación incluye:
+- 🔧 [Configuración Local Detallada](./docs/deployment/local-setup.md)
+- 🗄️ [Modelos de Backend](./docs/backend/models.md)
+- 🖥️ [Vistas y ViewSets](./docs/backend/views.md)
+- ⚛️ [Componentes React](./docs/frontend/components.md)  
+- 📡 [API Endpoints](./docs/apis/products.md)
+- 🔐 [Sistema de Autenticación](./docs/frontend/utils.md)
 
 ---
 
@@ -179,12 +210,53 @@ taller-maestro/
 ### Errores comunes con favoritos
 - **401 Unauthorized:**
   - El usuario no está autenticado o el token JWT es inválido/expirado.
-  - Solución: Revisa el flujo de login y asegúrate de que el token se envía en cada petición.
+  - Solución: El sistema maneja esto automáticamente con renovación de tokens. Si persiste, revisar el flujo de login.
 - **El botón de favoritos no se actualiza:**
   - Puede deberse a que el evento `favorites-updated` no se dispara o no se escucha en algún componente.
   - Solución: Asegúrate de que tanto el Navbar como ProductDetailPage escuchan el evento y recargan los favoritos.
 - **No se ven productos en favoritos tras registrarse:**
   - El usuario debe estar autenticado y el token debe estar disponible en el contexto.
+
+### Errores comunes de instalación
+
+#### Error: "Port already in use"
+```bash
+# Matar proceso en puerto 8000
+sudo lsof -ti:8000 | xargs kill -9
+
+# Matar proceso en puerto 3000  
+sudo lsof -ti:3000 | xargs kill -9
+```
+
+#### Error: "Module not found" 
+```bash
+# Backend
+pip install -r requirements.txt
+
+# Frontend
+npm install
+```
+
+#### Error: CORS en desarrollo
+Verificar que en `taller-maestro-backend/tallerBackend/settings.py`:
+```python
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+]
+```
+
+### Más problemas?
+Consulta la [Documentación de Troubleshooting](./docs/deployment/local-setup.md#-solución-de-problemas-comunes) para más detalles.
+
+---
+
+## Contribución
+
+1. Fork el proyecto
+2. Crea una rama: `git checkout -b feature/nueva-funcionalidad`
+3. Commit: `git commit -m "feat: add nueva funcionalidad"`
+4. Push: `git push origin feature/nueva-funcionalidad`
+5. Abre un Pull Request
 
 ---
 
