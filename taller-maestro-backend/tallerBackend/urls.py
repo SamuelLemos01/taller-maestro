@@ -27,4 +27,5 @@ urlpatterns = [
     path('api/auth/', include('auth_user.urls')),
     path('api/token/', EmailTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/v1/shopping-cart/', include('shopping_cart.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
