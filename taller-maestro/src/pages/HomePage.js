@@ -4,9 +4,9 @@ import HeroSlider from '../components/HeroSlider';
 import FeatureCards from '../components/FeatureCards';
 import ProductsSection from '../components/ProductsSection';
 import Footer from '../components/Footer';
+import Loader from '../components/Loader';
 import './HomePage.css';
-
-const API_URL = 'http://localhost:8000/api/v1/products';
+import { getHomepageData } from '../services/productsService';
 
 const HomePage = () => {
   const [featuredProducts, setFeaturedProducts] = useState([]);
@@ -17,26 +17,19 @@ const HomePage = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const [featuredRes, newRes] = await Promise.all([
-          fetch(`${API_URL}/featured/`),
-          fetch(`${API_URL}/new/`)
-        ]);
-
-        if (!featuredRes.ok || !newRes.ok) {
-          throw new Error('Error al cargar los productos');
+        // Usar el servicio de productos
+        const result = await getHomepageData();
+        
+        if (result.success) {
+          setFeaturedProducts(result.data.featured);
+          setNewProducts(result.data.new);
+        } else {
+          throw new Error(result.error);
         }
-
-        const [featured, newProds] = await Promise.all([
-          featuredRes.json(),
-          newRes.json()
-        ]);
-
-        setFeaturedProducts(featured);
-        setNewProducts(newProds);
         setLoading(false);
       } catch (err) {
         console.error('Error:', err);
-        setError('Error al cargar los productos');
+        setError(err.message || 'Error al cargar los productos');
         setLoading(false);
       }
     };
@@ -48,7 +41,11 @@ const HomePage = () => {
     return (
       <div className="home-page">
         <Navbar />
-        <div className="loading">Cargando productos...</div>
+        <Loader 
+          size="large"
+          text="Cargando productos destacados..."
+          type="spinner"
+        />
       </div>
     );
   }

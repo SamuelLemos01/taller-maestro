@@ -2,13 +2,14 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import Loader from '../components/Loader';
 import './ProductDetailPage.css';
 import Swal from 'sweetalert2';
 import { UserContext } from '../context/UserContext';
+import { useCart } from '../context/CartContext';
 import { addToFavorites, getFavorites } from '../services/favoritesService';
 import { logoutUser } from '../utils/authUtils';
-
-const API_URL = 'http://localhost:8000/api/v1/products';
+import { getProductDetail } from '../services/productsService';
 
 const ProductDetailPage = () => {
   const { slug } = useParams();
@@ -19,18 +20,19 @@ const ProductDetailPage = () => {
   const [error, setError] = useState(null);
   const { user, setUser } = useContext(UserContext);
   const [favorites, setFavorites] = useState([]);
+  const { addToCart } = useCart();
 
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await fetch(`${API_URL}/detail/${slug}/`);
-        if (!response.ok) {
-          throw new Error('Producto no encontrado');
+        const result = await getProductDetail(slug);
+        if (result.success) {
+          setProduct(result.data);
+          setSelectedImage(result.data.image);
+          setLoading(false);
+        } else {
+          throw new Error(result.error);
         }
-        const data = await response.json();
-        setProduct(data);
-        setSelectedImage(data.image);
-        setLoading(false);
       } catch (err) {
         console.error('Error:', err);
         setError('Error al cargar el producto');
@@ -63,7 +65,7 @@ const ProductDetailPage = () => {
     return () => window.removeEventListener('favorites-updated', reloadFavorites);
   }, [user, setUser, navigate]);
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!user) {
       Swal.fire({
         icon: 'info',
@@ -73,16 +75,46 @@ const ProductDetailPage = () => {
       });
       return;
     }
-    let cart = JSON.parse(localStorage.getItem('cart')) || [];
-    cart.push(product);
-    localStorage.setItem('cart', JSON.stringify(cart));
-    Swal.fire({
-      icon: 'success',
-      title: '¡Agregado al carrito!',
-      text: `${product.name} se agregó correctamente al carrito`,
-      timer: 1200,
-      showConfirmButton: false
-    });
+
+    try {
+      const result = await addToCart(product.id, 1, navigate);
+      if (result.success) {
+        Swal.fire({
+          icon: 'success',
+          title: '¡Agregado al carrito!',
+          text: `${product.name} se agregó correctamente al carrito`,
+          timer: 1200,
+          showConfirmButton: false
+        });
+        // Disparar evento para sincronizar otros componentes
+        window.dispatchEvent(new Event('cart-updated'));
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (error) {
+      console.error('Error al agregar al carrito:', error);
+      
+      // Mejorar mensajes de error para el usuario
+      let userMessage = 'No se pudo agregar al carrito';
+      
+      if (error.message.includes('400') || error.message.includes('stock') || error.message.toLowerCase().includes('agotado')) {
+        userMessage = 'Lo sentimos, este producto está agotado o no hay suficiente stock disponible.';
+      } else if (error.message === 'Sesión expirada' || error.message === 'Usuario no autenticado') {
+        logoutUser(setUser, navigate);
+        return;
+      } else if (error.message.includes('500')) {
+        userMessage = 'Error del servidor. Por favor intenta más tarde.';
+      } else if (error.message.includes('network') || error.message.includes('Network')) {
+        userMessage = 'Error de conexión. Verifica tu internet e intenta nuevamente.';
+      }
+      
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: userMessage,
+        confirmButtonColor: '#d33'
+      });
+    }
   };
 
   const handleAddToFavorites = async () => {
@@ -126,7 +158,11 @@ const ProductDetailPage = () => {
     return (
       <div className="product-detail-page">
         <Navbar />
-        <div className="loading">Cargando producto...</div>
+        <Loader 
+          size="large"
+          text="Cargando detalles del producto..."
+          type="spinner"
+        />
         <Footer />
       </div>
     );

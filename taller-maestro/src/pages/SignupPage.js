@@ -4,6 +4,7 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import './AuthPages.css';
 import Swal from 'sweetalert2';
+import { registerUser } from '../services/authService';
 
 const SignupPage = () => {
   const [formData, setFormData] = useState({
@@ -67,28 +68,16 @@ const SignupPage = () => {
     e.preventDefault();
     if (validateForm()) {
       try {
-        const response = await fetch('http://localhost:8000/api/auth/signup/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            firstName: formData.firstName,
-            lastName: formData.lastName,
-            phone: formData.phone,
-            email: formData.email,
-            password: formData.password
-          })
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || 'Error al registrar usuario');
+        // Usar el servicio de autenticación
+        const result = await registerUser(formData);
+        
+        if (result.success) {
+          // Registro exitoso: redirige al login con estado
+          navigate('/login', { state: { registered: true } });
+        } else {
+          // Error en el registro
+          throw new Error(result.error);
         }
-
-        // Registro exitoso: redirige al login con estado
-        navigate('/login', { state: { registered: true } });
       } catch (error) {
         Swal.fire({
           icon: 'error',

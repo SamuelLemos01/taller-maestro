@@ -1,0 +1,197 @@
+/* Contenedor principal del loader */
+.loader-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    min-height: 200px;
+}
+
+.loader-fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(255, 255, 255, 0.9);
+    z-index: 9999;
+    backdrop-filter: blur(2px);
+}
+
+/* Loader principal */
+.loader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+/* Tamaños del loader */
+.loader-small .loader-spinner {
+    width: 30px;
+    height: 30px;
+}
+
+.loader-medium .loader-spinner {
+    width: 50px;
+    height: 50px;
+}
+
+.loader-large .loader-spinner {
+    width: 70px;
+    height: 70px;
+}
+
+/* Spinner con 4 puntos */
+.loader-spinner {
+    position: relative;
+    display: inline-block;
+}
+
+.loader-dot {
+    position: absolute;
+    width: 25%;
+    height: 25%;
+    background: linear-gradient(45deg, #3a5a40, #588157);
+    border-radius: 50%;
+    animation: loader-rotate 1.2s infinite ease-in-out;
+}
+
+.loader-dot:nth-child(1) {
+    top: 0;
+    left: 0;
+    animation-delay: -0.45s;
+}
+
+.loader-dot:nth-child(2) {
+    top: 0;
+    right: 0;
+    animation-delay: -0.3s;
+}
+
+.loader-dot:nth-child(3) {
+    bottom: 0;
+    right: 0;
+    animation-delay: -0.15s;
+}
+
+.loader-dot:nth-child(4) {
+    bottom: 0;
+    left: 0;
+    animation-delay: 0s;
+}
+
+/* Animación del spinner */
+@keyframes loader-rotate {
+
+    0%,
+    80%,
+    100% {
+        transform: scale(0);
+        opacity: 0.5;
+    }
+
+    40% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Texto del loader */
+.loader-text {
+    margin: 0;
+    font-size: 1rem;
+    color: #666;
+    font-weight: 500;
+    text-align: center;
+    animation: loader-pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes loader-pulse {
+
+    0%,
+    100% {
+        opacity: 0.6;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+/* Estilos responsivos */
+@media (max-width: 768px) {
+    .loader-container {
+        padding: 1.5rem;
+        min-height: 150px;
+    }
+
+    .loader-text {
+        font-size: 0.9rem;
+    }
+}
+
+/* Variante de loader con círculo */
+.loader.circle .loader-spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3a5a40;
+    border-radius: 50%;
+    animation: loader-spin 1s linear infinite;
+}
+
+.loader.circle .loader-dot {
+    display: none;
+}
+
+@keyframes loader-spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Variante de loader con puntos en línea */
+.loader.dots .loader-spinner {
+    display: flex;
+    gap: 8px;
+}
+
+.loader.dots .loader-dot {
+    position: static;
+    width: 10px;
+    height: 10px;
+    animation: loader-bounce 1.4s infinite ease-in-out both;
+}
+
+.loader.dots .loader-dot:nth-child(1) {
+    animation-delay: -0.32s;
+}
+
+.loader.dots .loader-dot:nth-child(2) {
+    animation-delay: -0.16s;
+}
+
+.loader.dots .loader-dot:nth-child(3) {
+    animation-delay: 0s;
+}
+
+.loader.dots .loader-dot:nth-child(4) {
+    animation-delay: 0.16s;
+}
+
+@keyframes loader-bounce {
+
+    0%,
+    80%,
+    100% {
+        transform: scale(0);
+    }
+
+    40% {
+        transform: scale(1);
+    }
+}

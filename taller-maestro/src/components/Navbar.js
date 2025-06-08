@@ -1,6 +1,7 @@
 import React, { useState, useContext, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { UserContext } from '../context/UserContext';
+import { useCart } from '../context/CartContext';
 import './Navbar.css';
 import logo from '../assets/images/logoNormal.png';
 import Swal from 'sweetalert2';
@@ -10,13 +11,24 @@ import { logoutUser } from '../utils/authUtils';
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
-  const [isCartOpen, setIsCartOpen] = useState(false);
   const [showFavorites, setShowFavorites] = useState(false);
   const [favorites, setFavorites] = useState([]);
   const [loadingFavorites, setLoadingFavorites] = useState(false);
 
   const navigate = useNavigate();
   const { user, setUser } = useContext(UserContext);
+  const { 
+    cartItems, 
+    cartCount, 
+    cartTotal, 
+    isCartOpen, 
+    setIsCartOpen,
+    removeFromCart,
+    updateQuantity,
+    increaseQuantity,
+    decreaseQuantity,
+    loadingCart 
+  } = useCart();
 
   const dropdownRef = useRef();
 
@@ -115,6 +127,65 @@ const Navbar = () => {
     }
   };
 
+  const handleRemoveFromCart = async (itemId) => {
+    try {
+      const result = await removeFromCart(itemId, navigate);
+      if (result.success) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Eliminado',
+          text: 'Producto eliminado del carrito',
+          timer: 1000,
+          showConfirmButton: false
+        });
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (error) {
+      console.error('Error al eliminar del carrito:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudo eliminar el producto del carrito',
+        confirmButtonColor: '#d33'
+      });
+    }
+  };
+
+  const handleIncreaseQuantity = async (itemId) => {
+    try {
+      const result = await increaseQuantity(itemId, navigate);
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+    } catch (error) {
+      console.error('Error al incrementar cantidad:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudo incrementar la cantidad',
+        confirmButtonColor: '#d33'
+      });
+    }
+  };
+
+  const handleDecreaseQuantity = async (itemId) => {
+    try {
+      const result = await decreaseQuantity(itemId, navigate);
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+    } catch (error) {
+      console.error('Error al decrementar cantidad:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudo decrementar la cantidad',
+        confirmButtonColor: '#d33'
+      });
+    }
+  };
+
   function stringToColor(str) {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
@@ -150,14 +221,83 @@ const Navbar = () => {
           <div className="cart-icon">
             <button onClick={() => setIsCartOpen(!isCartOpen)}>
               <i className="fas fa-shopping-cart"></i>
-              <span className="cart-count">0</span>
+              <span className="cart-count">{cartCount}</span>
             </button>
             {isCartOpen && (
               <div className="cart-dropdown">
-                <div className="cart-empty">
-                  <p>Tu carrito está vacío</p>
-                  <Link to="/catalogo" className="btn btn-primary">Ir a comprar</Link>
-                </div>
+                {loadingCart ? (
+                  <div className="cart-loading">
+                    <i className="fas fa-spinner fa-spin"></i> Cargando...
+                  </div>
+                ) : cartItems.length === 0 ? (
+                  <div className="cart-empty">
+                    <p>Tu carrito está vacío</p>
+                    <Link to="/catalogo" className="btn btn-primary" onClick={() => setIsCartOpen(false)}>
+                      Ir a comprar
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="cart-items">
+                    <div className="cart-header">
+                      <h4>Mi Carrito ({cartCount} productos)</h4>
+                    </div>
+                    <div className="cart-list">
+                      {cartItems.map(item => (
+                        <div key={item.id} className="cart-item">
+                          <img 
+                            src={item.product.image} 
+                            alt={item.product.name} 
+                            className="cart-item-image"
+                          />
+                          <div className="cart-item-info">
+                            <h5 className="cart-item-name">{item.product.name}</h5>
+                            <p className="cart-item-price">
+                              ${item.product.price.toLocaleString('es-CO')} c/u
+                            </p>
+                            <div className="cart-item-quantity">
+                              <button 
+                                onClick={() => handleDecreaseQuantity(item.product.id)}
+                                disabled={item.quantity <= 1}
+                                className="quantity-btn"
+                              >
+                                -
+                              </button>
+                              <span className="quantity">{item.quantity}</span>
+                              <button 
+                                onClick={() => handleIncreaseQuantity(item.product.id)}
+                                className="quantity-btn"
+                              >
+                                +
+                              </button>
+                            </div>
+                            <p className="cart-item-total">
+                              Subtotal: ${(item.product.price * item.quantity).toLocaleString('es-CO')}
+                            </p>
+                          </div>
+                          <button 
+                            className="cart-item-remove"
+                            onClick={() => handleRemoveFromCart(item.product.id)}
+                            title="Eliminar del carrito"
+                          >
+                            &times;
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="cart-footer">
+                      <div className="cart-total">
+                        <strong>Total: ${cartTotal.toLocaleString('es-CO')}</strong>
+                      </div>
+                      <Link 
+                        to="/checkout" 
+                        className="btn btn-primary btn-checkout"
+                        onClick={() => setIsCartOpen(false)}
+                      >
+                        Proceder al Pago
+                      </Link>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

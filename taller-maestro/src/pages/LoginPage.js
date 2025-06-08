@@ -5,6 +5,7 @@ import Footer from '../components/Footer';
 import './AuthPages.css';
 import Swal from 'sweetalert2';
 import { UserContext } from '../context/UserContext';
+import { loginUser } from '../services/authService';
 
 const LoginPage = (props) => {
   const location = useLocation();
@@ -69,40 +70,37 @@ const LoginPage = (props) => {
     e.preventDefault();
     if (validateForm()) {
       try {
-        const response = await fetch('http://localhost:8000/api/token/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
+        // Usar el servicio de autenticación
+        const result = await loginUser(formData.email, formData.password);
+        
+        if (result.success) {
+          // Login exitoso
+          const data = result.data;
+          
+          // Guardar el refresh token por separado
+          localStorage.setItem('refreshToken', data.refresh);
+          
+          setUser({
             email: formData.email,
-            password: formData.password
-          })
-        });
-        const data = await response.json();
-        if (!response.ok) {
-          throw new Error(data.detail || data.error || 'Error al iniciar sesión');
+            token: data.access,
+            refreshToken: data.refresh,
+            firstName: data.first_name || data.firstName,
+            lastName: data.last_name || data.lastName
+          });
+          
+          Swal.fire({
+            icon: 'success',
+            title: '¡Bienvenido!',
+            text: 'Inicio de sesión exitoso',
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'Continuar'
+          }).then(() => {
+            navigate('/');
+          });
+        } else {
+          // Error en el login
+          throw new Error(result.error);
         }
-        
-        // Guardar el refresh token por separado
-        localStorage.setItem('refreshToken', data.refresh);
-        
-        setUser({
-          email: formData.email,
-          token: data.access,
-          refreshToken: data.refresh,
-          firstName: data.first_name || data.firstName,
-          lastName: data.last_name || data.lastName
-        });
-        Swal.fire({
-          icon: 'success',
-          title: '¡Bienvenido!',
-          text: 'Inicio de sesión exitoso',
-          confirmButtonColor: '#3085d6',
-          confirmButtonText: 'Continuar'
-        }).then(() => {
-          navigate('/');
-        });
       } catch (error) {
         Swal.fire({
           icon: 'error',

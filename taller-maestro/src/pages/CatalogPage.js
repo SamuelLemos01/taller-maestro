@@ -5,9 +5,10 @@ import Footer from '../components/Footer';
 import ProductFilter from '../components/ProductFilter';
 import ProductSearch from '../components/ProductSearch';
 import ProductCard from '../components/ProductCard';
+import Loader from '../components/Loader';
 import './CatalogPage.css';
+import { getProducts, getCategories } from '../services/productsService';
 
-const API_URL = 'http://localhost:8000/api/v1/products';
 
 const CatalogPage = () => {
   const navigate = useNavigate();
@@ -26,10 +27,12 @@ const CatalogPage = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch(`${API_URL}/categories/`);
-        if (!response.ok) throw new Error('Error al cargar categorías');
-        const data = await response.json();
-        setCategories(data);
+        const result = await getCategories();
+        if (result.success) {
+          setCategories(result.data);
+        } else {
+          console.error('Error:', result.error);
+        }
       } catch (err) {
         console.error('Error:', err);
       }
@@ -41,26 +44,25 @@ const CatalogPage = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        let url = `${API_URL}/catalog/?`;
-        
-        currentCategories.forEach(category => {
-          url += `categories[]=${category}&`;
-        });
-        
-        if (currentSearch) url += `search=${currentSearch}&`;
-        if (currentMinPrice) url += `min_price=${currentMinPrice}&`;
-        if (currentMaxPrice) url += `max_price=${currentMaxPrice}&`;
-        if (currentSortBy) url += `sort_by=${currentSortBy}&`;
-
-        const response = await fetch(url);
-        if (!response.ok) throw new Error('Error al cargar productos');
-        const data = await response.json();
-        setProducts(data);
+        const filters = {
+          categories: currentCategories,
+          search: currentSearch || undefined,
+          minPrice: currentMinPrice || undefined,
+          maxPrice: currentMaxPrice || undefined,
+          sortBy: currentSortBy || undefined
+        };
+      
+        const result = await getProducts(filters);
+        if (result.success) {
+          setProducts(result.data);
+        } else {
+          throw new Error(result.error);
+        }
         setLoading(false);
       } catch (err) {
-        console.error('Error:', err);
-        setError('Error al cargar los productos');
-        setLoading(false);
+          console.error('Error:', err);
+          setError('Error al cargar los productos');
+          setLoading(false);
       }
     };
 
@@ -109,7 +111,11 @@ const CatalogPage = () => {
     return (
       <div className="catalog-page">
         <Navbar />
-        <div className="loading">Cargando productos...</div>
+        <Loader 
+          size="large"
+          text="Cargando catálogo de productos..."
+          type="spinner"
+        />
         <Footer />
       </div>
     );
