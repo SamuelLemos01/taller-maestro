@@ -21,8 +21,8 @@ const Navbar = () => {
     cartItems, 
     cartCount, 
     cartTotal, 
-    isCartOpen, 
-    setIsCartOpen,
+    showCart, 
+    setShowCart,
     removeFromCart,
     updateQuantity,
     increaseQuantity,
@@ -93,6 +93,11 @@ const Navbar = () => {
     setShowFavorites(true);
   };
   const closeFavoritesDrawer = () => setShowFavorites(false);
+
+  const openCartDrawer = () => {
+    setShowCart(true);
+  };
+  const closeCartDrawer = () => setShowCart(false);
 
   const handleGoToDetail = (id, slug, isOutOfStock) => {
     if (!isOutOfStock) navigate(`/producto/${slug}`);
@@ -219,87 +224,10 @@ const Navbar = () => {
 
         <div className="navbar-actions">
           <div className="cart-icon">
-            <button onClick={() => setIsCartOpen(!isCartOpen)}>
+            <button onClick={openCartDrawer}>
               <i className="fas fa-shopping-cart"></i>
               <span className="cart-count">{cartCount}</span>
             </button>
-            {isCartOpen && (
-              <div className="cart-dropdown">
-                {loadingCart ? (
-                  <div className="cart-loading">
-                    <i className="fas fa-spinner fa-spin"></i> Cargando...
-                  </div>
-                ) : cartItems.length === 0 ? (
-                  <div className="cart-empty">
-                    <p>Tu carrito está vacío</p>
-                    <Link to="/catalogo" className="btn btn-primary" onClick={() => setIsCartOpen(false)}>
-                      Ir a comprar
-                    </Link>
-                  </div>
-                ) : (
-                  <div className="cart-items">
-                    <div className="cart-header">
-                      <h4>Mi Carrito ({cartCount} productos)</h4>
-                    </div>
-                    <div className="cart-list">
-                      {cartItems.map(item => (
-                        <div key={item.id} className="cart-item">
-                          <img 
-                            src={item.product.image} 
-                            alt={item.product.name} 
-                            className="cart-item-image"
-                          />
-                          <div className="cart-item-info">
-                            <h5 className="cart-item-name">{item.product.name}</h5>
-                            <p className="cart-item-price">
-                              ${item.product.price.toLocaleString('es-CO')} c/u
-                            </p>
-                            <div className="cart-item-quantity">
-                              <button 
-                                onClick={() => handleDecreaseQuantity(item.product.id)}
-                                disabled={item.quantity <= 1}
-                                className="quantity-btn"
-                              >
-                                -
-                              </button>
-                              <span className="quantity">{item.quantity}</span>
-                              <button 
-                                onClick={() => handleIncreaseQuantity(item.product.id)}
-                                className="quantity-btn"
-                              >
-                                +
-                              </button>
-                            </div>
-                            <p className="cart-item-total">
-                              Subtotal: ${(item.product.price * item.quantity).toLocaleString('es-CO')}
-                            </p>
-                          </div>
-                          <button 
-                            className="cart-item-remove"
-                            onClick={() => handleRemoveFromCart(item.product.id)}
-                            title="Eliminar del carrito"
-                          >
-                            &times;
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="cart-footer">
-                      <div className="cart-total">
-                        <strong>Total: ${cartTotal.toLocaleString('es-CO')}</strong>
-                      </div>
-                      <Link 
-                        to="/checkout" 
-                        className="btn btn-primary btn-checkout"
-                        onClick={() => setIsCartOpen(false)}
-                      >
-                        Proceder al Pago
-                      </Link>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
           </div>
 
           <div className="user-icon">
@@ -369,6 +297,74 @@ const Navbar = () => {
           </button>
         </div>
       </div>
+
+      {/*carrito drawer */}
+      {showCart && (
+        <>
+          <div className="cart-overlay" onClick={closeCartDrawer}></div>
+          <div className="cart-drawer">
+            <button className="cart-close" onClick={closeCartDrawer}>&times;</button>
+            <h4>Mi Carrito</h4>
+            {loadingCart ? (
+              <div className="cart-loading">
+                <i className="fas fa-spinner fa-spin"></i> Cargando...
+              </div>
+            ) : cartItems.length === 0 ? (
+              <div className="cart-empty">No tienes productos en tu carrito aún.</div>
+            ) : (
+              <>
+                <ul className="cart-list">
+                  {cartItems.map(item => (
+                    <li key={item.id} className="cart-item">
+                      <img src={item.product.image} alt={item.product.name} className="cart-thumb" />
+                      <div className="cart-info">
+                        <div className="cart-title">{item.product.name}</div>
+                        <div className="cart-price">${item.product.price.toLocaleString('es-CO')} c/u</div>
+                        <div className="cart-quantity-controls">
+                          <button 
+                            onClick={() => handleDecreaseQuantity(item.product.id)}
+                            disabled={item.quantity <= 1}
+                            className="quantity-btn"
+                          >
+                            -
+                          </button>
+                          <span className="quantity">{item.quantity}</span>
+                          <button 
+                            onClick={() => handleIncreaseQuantity(item.product.id)}
+                            className="quantity-btn"
+                          >
+                            +
+                          </button>
+                        </div>
+                        <div className="cart-subtotal">Subtotal: ${(item.product.price * item.quantity).toLocaleString('es-CO')}</div>
+                      </div>
+                      <button 
+                        className="cart-remove" 
+                        onClick={() => handleRemoveFromCart(item.product.id)}
+                        title="Eliminar"
+                      >
+                        &times;
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+                <div className="cart-drawer-footer">
+                  <div className="cart-total-amount">
+                    <strong>Total: ${cartTotal.toLocaleString('es-CO')}</strong>
+                  </div>
+                  <Link 
+                    to="/checkout" 
+                    className="btn-checkout-drawer"
+                    onClick={closeCartDrawer}
+                  >
+                    Proceder al Pago
+                  </Link>
+                </div>
+              </>
+            )}
+          </div>
+        </>
+      )}
 
       {/*favoritos */}
       {showFavorites && (

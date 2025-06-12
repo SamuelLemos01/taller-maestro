@@ -21,7 +21,7 @@ export const CartProvider = ({ children }) => {
   const [cartCount, setCartCount] = useState(0);
   const [cartTotal, setCartTotal] = useState(0);
   const [loadingCart, setLoadingCart] = useState(false);
-  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [showCart, setShowCart] = useState(false);
 
   const { user, setUser } = useContext(UserContext);
 
@@ -60,13 +60,12 @@ export const CartProvider = ({ children }) => {
           // Si result.data es directamente un array
           cartItems = result.data;
         } else if (result.data && Array.isArray(result.data.items)) {
-          // Si result.data tiene una propiedad 'items' que es el array (estructura de tu API)
+          // Si result.data tiene una propiedad 'items' que es el array
           cartItems = result.data.items;
         } else if (result.data && Array.isArray(result.data.cart_items)) {
           // Si result.data tiene una propiedad 'cart_items' que es el array
           cartItems = result.data.cart_items;
         } else {
-          // Estructura desconocida
           cartItems = [];
         }
         
@@ -229,10 +228,10 @@ export const CartProvider = ({ children }) => {
     cartCount,
     cartTotal,
     loadingCart,
-    isCartOpen,
+    showCart,
     
     // Funciones
-    setIsCartOpen,
+    setShowCart,
     loadCart,
     addToCart: addToCartHandler,
     updateQuantity,
