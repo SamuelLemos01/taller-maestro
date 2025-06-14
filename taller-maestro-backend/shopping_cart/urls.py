@@ -15,6 +15,7 @@ urlpatterns = [
     path('cart/check/', views.ShoppingCartViewSet.as_view({'get': 'check_item'}), name='check-cart-item'),
     path('cart/clear/', views.ShoppingCartViewSet.as_view({'post': 'clear_cart'}), name='clear-cart'),
     path('cart/summary/', views.ShoppingCartViewSet.as_view({'get': 'summary'}), name='cart-summary'),
+    path('cart/mp-checkout/', views.ShoppingCartViewSet.as_view({'get': 'mp_checkout_data'}), name='mp-cart-checkout-data'),
 ]
 
 urlpatterns += router.urls 

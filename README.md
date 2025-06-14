@@ -3,6 +3,7 @@
 ## Índice
 - [Descripción](#descripción)
 - [Características Principales](#características-principales)
+- [Notas del Proyecto](#notas-del-proyecto)
 - [Arquitectura del Proyecto](#arquitectura-del-proyecto)
 - [Requisitos](#requisitos)
 - [Instalación](#instalación)
@@ -26,6 +27,17 @@ El Taller del Maestro es una plataforma web para la gestión y venta de producto
 - **Seguridad reforzada**: expiración y rotación de tokens, blacklist, CORS seguro
 - **Arquitectura full-stack**: Backend en Django + DRF, frontend en React
 - **Diseño responsive** y experiencia de usuario moderna
+
+## Notas del Proyecto
+
+📋 **Gestión de Tareas y Desarrollo**: Para ver el estado actual del proyecto, tareas pendientes e ideas futuras, consulta nuestro workspace de Notion:
+
+🔗 **[Task Taller Maestro - Notion](https://www.notion.so/Task-Taller-Maestro-2126eb0e77328089b3bef9f2db7e4f0f?source=copy_link)**
+
+*Este documento incluye:*
+- ✅ **Tabla de tareas pendientes** y su estado
+- 💡 **Ideas** para futuras funcionalidades
+- 📝 **Abreviaturas de commits** y convenciones del proyecto
 
 ## Arquitectura del Proyecto
 

@@ -29,7 +29,7 @@ export const refreshAuthToken = async (refreshToken) => {
     return {
       success: true,
       accessToken: response.data.access,
-      refreshToken: response.data.refresh || refreshToken // Algunos configs no rotan el refresh
+      refreshToken: response.data.refresh || refreshToken 
     };
   } catch (error) {
     console.error('Error al renovar token:', error);

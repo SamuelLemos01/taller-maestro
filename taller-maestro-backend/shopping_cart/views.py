@@ -12,6 +12,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.db import transaction
+import uuid
 
 # Create your views here.
 
@@ -290,4 +291,70 @@ class ShoppingCartViewSet(viewsets.ModelViewSet):
             "total_price": total_price,
             "cart_id": cart.id
         })
+
+    @action(detail=False, methods=['get'])
+    def mp_checkout_data(self, request):
+        """Devuelve los datos del carrito formateados para MercadoPago"""
+        cart = self.get_or_create_cart()
+        items = cart.shoppingcartitem_set.all()
+        
+        if not items.exists():
+            return Response(
+                {"error": "El carrito está vacío."}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Verificar stock de todos los productos antes del checkout
+        for item in items:
+            if item.product.stock < item.quantity:
+                return Response(
+                    {"error": f"Stock insuficiente para {item.product.name}. Solo quedan {item.product.stock} unidades."}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        
+        # Formatear datos para MercadoPago
+        total_amount = sum(item.product.price * item.quantity for item in items)
+        
+        # Crear referencia única para la transacción
+        reference = f"REF-{cart.user.id}-{uuid.uuid4().hex[:8].upper()}"
+        
+        # Formatear items para MercadoPago
+        mp_items = []
+        for item in items:
+            # Construir URL absoluta para la imagen
+            picture_url = None
+            if item.product.image:
+                picture_url = request.build_absolute_uri(item.product.image.url)
+            
+            mp_items.append({
+                "id": str(item.product.id),
+                "title": item.product.name,
+                "currency_id": "COP",
+                "quantity": item.quantity,
+                "unit_price": float(item.product.price),
+                "picture_url": picture_url,
+                "description": item.product.description[:255] if item.product.description else "",
+                "category_id": "others"  # Puedes mapear según tus categorías
+            })
+        
+        checkout_data = {
+            "items": mp_items,
+            "external_reference": reference,
+            "total_amount": float(total_amount),
+            "total_items": items.count(),
+            "cart_id": cart.id,
+            "payer": {
+                "email": cart.user.email,
+                "name": cart.user.first_name or "",
+                "surname": cart.user.last_name or ""
+            },
+            "back_urls": {
+                "success": request.build_absolute_uri("/payment-success/"),
+                "failure": request.build_absolute_uri("/payment-failure/"),
+                "pending": request.build_absolute_uri("/payment-pending/")
+            },
+            "auto_return": "approved"
+        }
+        
+        return Response(checkout_data)
         

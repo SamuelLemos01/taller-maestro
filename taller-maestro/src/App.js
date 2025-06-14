@@ -8,7 +8,7 @@ import './App.css';
 
 // Importar componentes
 import Navbar from './components/Navbar';
-
+import WhatsAppFloat from './components/WhatsAppFloat';
 // Importar páginas
 import HomePage from './pages/HomePage';
 import CatalogPage from './pages/CatalogPage';
@@ -39,6 +39,7 @@ function App() {
                   <Route path="/producto/:slug" element={<ProductDetailPage />} />
                 </Routes>
               </main>
+              <WhatsAppFloat />
             </div>
           </AuthLoader>
         </Router>
