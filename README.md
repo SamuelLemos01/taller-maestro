@@ -24,9 +24,7 @@ El Taller del Maestro es una plataforma web para la gestión y venta de producto
 - **Carrito de compras** con drawer lateral y gestión de cantidades
 - **Panel de favoritos** único por usuario (requiere autenticación)
 - **Autenticación JWT** usando email (no username)
-- **Seguridad reforzada**: expiración y rotación de tokens, blacklist, CORS seguro
-- **Arquitectura full-stack**: Backend en Django + DRF, frontend en React
-- **Diseño responsive** y experiencia de usuario moderna
+- **Seguridad reforzada**: expiración y rotación de tokens
 
 ## Notas del Proyecto
 
